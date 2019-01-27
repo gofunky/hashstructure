@@ -42,11 +42,11 @@ type HashOptions struct {
 //
 // Notes on the value:
 //
-//   * Unexported fields on structs are ignored and do not affect the
-//     hash value.
+//   * Unexported fields on structs are ignored and do not affect the  hash value.
 //
-//   * Adding an exported field to a struct with the zero value will change
-//     the hash value.
+//   * Adding an exported field to a struct with the zero value will change  the hash value.
+//
+//   * Adding an unexported `hash` field or a `Hash()` function will override the hash generation.
 //
 // For structs, the hashing can be controlled using tags. For example:
 //
