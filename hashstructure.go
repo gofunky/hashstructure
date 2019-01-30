@@ -217,17 +217,18 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 
 	case reflect.Struct:
 		parent := v.Interface()
-		var include Includable
-		if impl, ok := parent.(Includable); ok {
-			include = impl
+
+		if impl, ok := parent.(Hashable); ok {
+			return impl.Hash(), nil
 		}
 
 		if f := v.FieldByName("hash"); f.IsValid() {
 			return f.Uint(), nil
 		}
 
-		if impl, ok := parent.(Hashable); ok {
-			return impl.Hash(), nil
+		var include Includable
+		if impl, ok := parent.(Includable); ok {
+			include = impl
 		}
 
 		t := v.Type()
