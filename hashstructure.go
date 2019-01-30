@@ -6,6 +6,7 @@ import (
 	"hash"
 	"hash/fnv"
 	"reflect"
+	"strings"
 )
 
 // ErrNotStringer is returned when there's an error with hash:"string"
@@ -115,18 +116,14 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 		// catch that.
 		if v.Kind() == reflect.Interface {
 			v = v.Elem()
-			continue
-		}
-
-		if v.Kind() == reflect.Ptr {
+		} else if v.Kind() == reflect.Ptr {
 			if w.zeronil {
 				t = v.Type().Elem()
 			}
 			v = reflect.Indirect(v)
-			continue
+		} else {
+			break
 		}
-
-		break
 	}
 
 	// If it is nil, treat it like a zero.
@@ -137,6 +134,11 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 	// Binary writing can use raw ints, we have to convert to
 	// a sized-int, we'll choose the largest...
 	switch v.Kind() {
+	case reflect.String:
+		w.h.Reset()
+		reader := strings.NewReader(v.String())
+		_, err := reader.WriteTo(w.h)
+		return w.h.Sum64(), err
 	case reflect.Int:
 		v = reflect.ValueOf(int64(v.Int()))
 	case reflect.Uint:
@@ -216,6 +218,7 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 		return h, nil
 
 	case reflect.Struct:
+
 		parent := v.Interface()
 
 		if impl, ok := parent.(Hashable); ok {
