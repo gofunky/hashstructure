@@ -587,23 +587,23 @@ func TestHash_hashable(t *testing.T) {
 	}{
 		{
 			testHashable{Value: "foo"},
-			testHashable{Value: "foo"},
+			&testHashablePointer{Value: "foo"},
 			true,
 		},
 
 		{
 			testHashable{Value: "foo1"},
-			testHashable{Value: "foo2"},
+			&testHashablePointer{Value: "foo2"},
 			true,
 		},
 		{
 			testHashable{Value: "foo"},
-			testHashable{Value: "bar"},
+			&testHashablePointer{Value: "bar"},
 			false,
 		},
 		{
 			testHashable{Value: "nofoo"},
-			testHashable{Value: "bar"},
+			&testHashablePointer{Value: "bar"},
 			true,
 		},
 	}
@@ -660,6 +660,17 @@ type testHashable struct {
 }
 
 func (t testHashable) Hash() uint64 {
+	if strings.HasPrefix(t.Value, "foo") {
+		return 500
+	}
+	return 100
+}
+
+type testHashablePointer struct {
+	Value string
+}
+
+func (t *testHashablePointer) Hash() uint64 {
 	if strings.HasPrefix(t.Value, "foo") {
 		return 500
 	}
