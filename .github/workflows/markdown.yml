@@ -33,13 +33,21 @@ jobs:
           body: |
             This pull requests includes and updates file-based examples in markdown files.
           labels: |
-            docs
             chore
+            documentation
           branch: 'markdown-examples'
       - name: committing changed files
+        id: committed
         if: ${{ github.head_ref != '' }}
         uses: stefanzweifel/git-auto-commit-action@v4.4.1
         with:
           commit_message: 'docs(markdown): include and update examples'
           branch: ${{ github.head_ref }}
           file_pattern: '*.md'
+      - uses: christianvuerings/add-labels@v1.1
+        if: ${{ steps.committed.outputs.changes_detected == 'true' }}
+        with:
+          labels: |
+            documentation
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
