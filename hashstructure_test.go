@@ -475,6 +475,26 @@ func TestHash_equalSlice(t *testing.T) {
 			[]int{0, 0, 0},
 			false,
 		},
+		{
+			[3]int{1, 2, 3},
+			[3]int{1, 2, 3},
+			true,
+		},
+		{
+			[3]int{1, 2, 3},
+			[3]int{3, 2, 1},
+			false,
+		},
+		{
+			[3]int{1, 1, 1},
+			[3]int{1, 1, 1},
+			true,
+		},
+		{
+			[3]int{1, 1, 1},
+			[3]int{0, 0, 0},
+			false,
+		},
 	}
 
 	for _, tc := range cases {
