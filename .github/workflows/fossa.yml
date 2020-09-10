@@ -33,7 +33,9 @@ jobs:
       run: fossa analyze
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
+        GOPATH: $HOME/go
     - name: check results
       run: fossa test
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
+        GOPATH: $HOME/go
