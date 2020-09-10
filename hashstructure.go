@@ -7,6 +7,7 @@ import (
 	"hash/fnv"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // ErrNotStringer is returned when there's an error with hash:"string"
@@ -144,9 +145,9 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 		_, err := reader.WriteTo(w.h)
 		return w.h.Sum64(), err
 	case reflect.Int:
-		v = reflect.ValueOf(int64(v.Int()))
+		v = reflect.ValueOf(v.Int())
 	case reflect.Uint:
-		v = reflect.ValueOf(uint64(v.Uint()))
+		v = reflect.ValueOf(v.Uint())
 	case reflect.Bool:
 		var tmp int8
 		if v.Bool() {
@@ -233,12 +234,24 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 			return f.Uint(), nil
 		}
 
+		t := v.Type()
+
+		if t == reflect.TypeOf(time.Time{}) {
+			w.h.Reset()
+			b, err := v.Interface().(time.Time).MarshalBinary()
+			if err != nil {
+				return 0, err
+			}
+
+			err = binary.Write(w.h, binary.LittleEndian, b)
+			return w.h.Sum64(), err
+		}
+
 		var include Includable
 		if impl, ok := parent.(Includable); ok {
 			include = impl
 		}
 
-		t := v.Type()
 		h, err := w.visit(reflect.ValueOf(t.Name()), nil)
 		if err != nil {
 			return 0, err

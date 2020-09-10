@@ -39,7 +39,7 @@ func TestHash_identity(t *testing.T) {
 		// We run the test 100 times to try to tease out variability
 		// in the runtime in terms of ordering.
 		valuelist := make([]uint64, 100)
-		for i, _ := range valuelist {
+		for i := range valuelist {
 			v, err := Hash(tc, nil)
 			if err != nil {
 				t.Fatalf("Error: %s\n\n%#v", err, tc)
@@ -66,6 +66,8 @@ func TestHash_identity(t *testing.T) {
 func TestHash_equal(t *testing.T) {
 	type testFoo struct{ Name string }
 	type testBar struct{ Name string }
+
+	now := time.Now()
 
 	cases := []struct {
 		One, Two interface{}
@@ -196,6 +198,12 @@ func TestHash_equal(t *testing.T) {
 			},
 			true,
 		},
+		{
+			now, // contains monotonic clock
+			time.Date(now.Year(), now.Month(), now.Day(), now.Hour(),
+				now.Minute(), now.Second(), now.Nanosecond(), now.Location()), // does not contain monotonic clock
+			true,
+		},
 	}
 
 	for i, tc := range cases {
@@ -288,6 +296,13 @@ func TestHash_equalIgnore(t *testing.T) {
 		{
 			TestTime2{Name: "foo", Time: now},
 			TestTime2{Name: "foo", Time: time.Time{}},
+			false,
+		},
+		{
+			TestTime2{Name: "foo", Time: now},
+			TestTime2{Name: "foo", Time: time.Date(now.Year(), now.Month(), now.Day(), now.Hour(),
+				now.Minute(), now.Second(), now.Nanosecond(), now.Location()),
+			},
 			true,
 		},
 	}
@@ -635,7 +650,7 @@ type testIncludable struct {
 	Ignore string
 }
 
-func (t testIncludable) HashInclude(field string, v interface{}) (bool, error) {
+func (t testIncludable) HashInclude(field string, _ interface{}) (bool, error) {
 	return field != "Ignore", nil
 }
 
@@ -643,7 +658,7 @@ type testIncludableMap struct {
 	Map map[string]string
 }
 
-func (t testIncludableMap) HashIncludeMap(field string, k, v interface{}) (bool, error) {
+func (t testIncludableMap) HashIncludeMap(field string, k, _ interface{}) (bool, error) {
 	if field != "Map" {
 		return true, nil
 	}
