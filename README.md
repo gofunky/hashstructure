@@ -49,7 +49,7 @@ func ExampleHash() {
 	}
 
 	v := ComplexStruct{
-		Name: "mitchellh",
+		Name: "gofunky",
 		Age:  64,
 		Metadata: map[string]interface{}{
 			"car":      true,
@@ -65,7 +65,7 @@ func ExampleHash() {
 
 	fmt.Printf("%d", hash)
 	// Output:
-	// 1839806922502695369
+	// 12836943650294093551
 }
 
 ```
