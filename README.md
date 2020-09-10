@@ -77,3 +77,5 @@ func ExampleHash() {
 }
 
 ```
+
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B5208%2Fhashstructure.svg?type=large)](https://app.fossa.com/projects/custom%2B5208%2Fhashstructure?ref=badge_large)
