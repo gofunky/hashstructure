@@ -1,0 +1,45 @@
+name: optimize markdown
+
+on:
+  push:
+    branches: [ master ]
+  pull_request_target:
+    branches: [ master ]
+
+jobs:
+  markdown:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        go-version: [1.15]
+        os: [ubuntu-latest]
+    name: include examples
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2.3.2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.PAT }}
+      - uses: nwylynko/markdown-add-files@v2.1.1
+      - name: creating pull request
+        if: ${{ github.head_ref == '' }}
+        uses: peter-evans/create-pull-request@v3.3.0
+        with:
+          commit-message: 'docs(markdown): include and update examples'
+          title: 'docs(markdown): include and update examples'
+          body: |
+            This pull requests includes and updates file-based examples in markdown files.
+          labels: |
+            docs
+            chore
+          branch: 'markdown-examples'
+      - name: committing changed files
+        if: ${{ github.head_ref != '' }}
+        uses: stefanzweifel/git-auto-commit-action@v4.4.1
+        with:
+          commit_message: 'docs(markdown): include and update examples'
+          branch: ${{ github.head_ref }}
+          file_pattern: '*.md'
