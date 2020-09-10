@@ -1,11 +1,39 @@
 package hashstructure
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 )
+
+type DefaultCase struct {
+	One, Two interface{}
+	Match    bool
+}
+
+func (tc *DefaultCase) test(t *testing.T, options ...*HashOptions) {
+	var opts *HashOptions
+	if len(options) == 1 {
+		opts = options[0]
+	}
+	one, err := Hash(tc.One, opts)
+	if err != nil {
+		t.Errorf("Failed to hash %#v: %s", tc.One, err)
+	}
+	two, err := Hash(tc.Two, opts)
+	if err != nil {
+		t.Errorf("Failed to hash %#v: %s", tc.Two, err)
+	}
+	// Zero is always wrong
+	if one == 0 {
+		t.Errorf("zero hash: %#v", tc.One)
+	}
+
+	// Compare
+	if (one == two) != tc.Match {
+		t.Errorf("Equality expected: %#v\nFirst: %#v\nSecond: %#v", tc.Match, tc.One, tc.Two)
+	}
+}
 
 func TestHash_identity(t *testing.T) {
 	cases := []interface{}{
@@ -42,7 +70,7 @@ func TestHash_identity(t *testing.T) {
 		for i := range valuelist {
 			v, err := Hash(tc, nil)
 			if err != nil {
-				t.Fatalf("Error: %s\n\n%#v", err, tc)
+				t.Errorf("Error: %s\n\n%#v", err, tc)
 			}
 
 			valuelist[i] = v
@@ -50,14 +78,14 @@ func TestHash_identity(t *testing.T) {
 
 		// Zero is always wrong
 		if valuelist[0] == 0 {
-			t.Fatalf("zero hash: %#v", tc)
+			t.Errorf("zero hash: %#v", tc)
 		}
 
 		// Make sure all the values match
 		t.Logf("%#v: %d", tc, valuelist[0])
 		for i := 1; i < len(valuelist); i++ {
 			if valuelist[i] != valuelist[0] {
-				t.Fatalf("non-matching: %d, %d\n\n%#v", i, 0, tc)
+				t.Errorf("non-matching: %d, %d\n\n%#v", i, 0, tc)
 			}
 		}
 	}
@@ -69,10 +97,7 @@ func TestHash_equal(t *testing.T) {
 
 	now := time.Now()
 
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			map[string]string{"foo": "bar"},
 			map[interface{}]string{"foo": "bar"},
@@ -206,31 +231,8 @@ func TestHash_equal(t *testing.T) {
 		},
 	}
 
-	for i, tc := range cases {
-		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			t.Logf("Hashing: %#v", tc.One)
-			one, err := Hash(tc.One, nil)
-			t.Logf("Result: %d", one)
-			if err != nil {
-				t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-			}
-			t.Logf("Hashing: %#v", tc.Two)
-			two, err := Hash(tc.Two, nil)
-			t.Logf("Result: %d", two)
-			if err != nil {
-				t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-			}
-
-			// Zero is always wrong
-			if one == 0 {
-				t.Fatalf("zero hash: %#v", tc.One)
-			}
-
-			// Compare
-			if (one == two) != tc.Match {
-				t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-			}
-		})
+	for _, tc := range cases {
+		tc.test(t)
 	}
 }
 
@@ -256,10 +258,7 @@ func TestHash_equalIgnore(t *testing.T) {
 	}
 
 	now := time.Now()
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			Test1{Name: "foo", UUID: "foo"},
 			Test1{Name: "foo", UUID: "bar"},
@@ -308,24 +307,7 @@ func TestHash_equalIgnore(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
-
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
-
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+		tc.test(t)
 	}
 }
 
@@ -368,10 +350,10 @@ func TestHash_stringTagError(t *testing.T) {
 		if err != nil {
 			if ens, ok := err.(*ErrNotStringer); ok {
 				if ens.Field != tc.Field {
-					t.Fatalf("did not get expected field %#v: got %s wanted %s", tc.Test, ens.Field, tc.Field)
+					t.Errorf("did not get expected field %#v: got %s wanted %s", tc.Test, ens.Field, tc.Field)
 				}
 			} else {
-				t.Fatalf("unknown error %#v: got %s", tc, err)
+				t.Errorf("unknown error %#v: got %s", tc, err)
 			}
 		}
 	}
@@ -386,75 +368,64 @@ func TestHash_equalNil(t *testing.T) {
 	}
 
 	cases := []struct {
-		One, Two interface{}
-		ZeroNil  bool
-		Match    bool
+		DefaultCase
+		ZeroNil bool
 	}{
 		{
-			Test{
+			DefaultCase: DefaultCase{
+				One: Test{
+					Str:   nil,
+					Int:   nil,
+					Map:   nil,
+					Slice: nil,
+				},
+				Two: Test{
+					Str:   new(string),
+					Int:   new(int),
+					Map:   make(map[string]string),
+					Slice: make([]string, 0),
+				},
+				Match: true,
+			},
+			ZeroNil: true,
+		},
+		{
+			DefaultCase: DefaultCase{One: Test{
 				Str:   nil,
 				Int:   nil,
 				Map:   nil,
 				Slice: nil,
 			},
-			Test{
-				Str:   new(string),
-				Int:   new(int),
-				Map:   make(map[string]string),
-				Slice: make([]string, 0),
+				Two: Test{
+					Str:   new(string),
+					Int:   new(int),
+					Map:   make(map[string]string),
+					Slice: make([]string, 0),
+				},
+				Match: false,
 			},
-			true,
-			true,
+			ZeroNil: false,
 		},
 		{
-			Test{
-				Str:   nil,
-				Int:   nil,
-				Map:   nil,
-				Slice: nil,
+			DefaultCase: DefaultCase{
+				One:   nil,
+				Two:   0,
+				Match: true,
 			},
-			Test{
-				Str:   new(string),
-				Int:   new(int),
-				Map:   make(map[string]string),
-				Slice: make([]string, 0),
-			},
-			false,
-			false,
+			ZeroNil: true,
 		},
 		{
-			nil,
-			0,
-			true,
-			true,
-		},
-		{
-			nil,
-			0,
-			false,
-			true,
+			DefaultCase: DefaultCase{
+				One:   nil,
+				Two:   0,
+				Match: true,
+			},
+			ZeroNil: false,
 		},
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, &HashOptions{ZeroNil: tc.ZeroNil})
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, &HashOptions{ZeroNil: tc.ZeroNil})
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
-
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
-
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+		tc.test(t, &HashOptions{ZeroNil: tc.ZeroNil})
 	}
 }
 
@@ -464,16 +435,12 @@ func TestHash_equalSet(t *testing.T) {
 		Friends []string `hash:"set"`
 	}
 
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			Test{Name: "foo", Friends: []string{"foo", "bar"}},
 			Test{Name: "foo", Friends: []string{"bar", "foo"}},
 			true,
 		},
-
 		{
 			Test{Name: "foo", Friends: []string{"foo", "bar"}},
 			Test{Name: "foo", Friends: []string{"foo", "bar"}},
@@ -482,32 +449,41 @@ func TestHash_equalSet(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
+		tc.test(t)
+	}
+}
 
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
+func TestHash_equalSlice(t *testing.T) {
+	cases := []DefaultCase{
+		{
+			[]int{1, 2, 3},
+			[]int{1, 2, 3},
+			true,
+		},
+		{
+			[]int{1, 2, 3},
+			[]int{3, 2, 1},
+			false,
+		},
+		{
+			[]int{1, 1, 1},
+			[]int{1, 1, 1},
+			true,
+		},
+		{
+			[]int{1, 1, 1},
+			[]int{0, 0, 0},
+			false,
+		},
+	}
 
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+	for _, tc := range cases {
+		tc.test(t)
 	}
 }
 
 func TestHash_includable(t *testing.T) {
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			testIncludable{Value: "foo"},
 			testIncludable{Value: "foo"},
@@ -528,32 +504,12 @@ func TestHash_includable(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
-
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
-
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+		tc.test(t)
 	}
 }
 
 func TestHash_includableMap(t *testing.T) {
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			testIncludableMap{Map: map[string]string{"foo": "bar"}},
 			testIncludableMap{Map: map[string]string{"foo": "bar"}},
@@ -574,32 +530,12 @@ func TestHash_includableMap(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
-
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
-
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+		tc.test(t)
 	}
 }
 
 func TestHash_hashable(t *testing.T) {
-	cases := []struct {
-		One, Two interface{}
-		Match    bool
-	}{
+	cases := []DefaultCase{
 		{
 			testHashable{Value: "foo"},
 			&testHashablePointer{Value: "foo"},
@@ -624,24 +560,7 @@ func TestHash_hashable(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		one, err := Hash(tc.One, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.One, err)
-		}
-		two, err := Hash(tc.Two, nil)
-		if err != nil {
-			t.Fatalf("Failed to hash %#v: %s", tc.Two, err)
-		}
-
-		// Zero is always wrong
-		if one == 0 {
-			t.Fatalf("zero hash: %#v", tc.One)
-		}
-
-		// Compare
-		if (one == two) != tc.Match {
-			t.Fatalf("bad, expected: %#v\n\n%#v\n\n%#v", tc.Match, tc.One, tc.Two)
-		}
+		tc.test(t)
 	}
 }
 
