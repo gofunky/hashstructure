@@ -32,7 +32,7 @@ jobs:
           ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
           ${{ runner.os }}-go-${{ matrix.go-version }}-
     - name: test
-      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+      run: go test -v -race -coverprofile="coverage.txt" -covermode=atomic ./...
     - name: uploading coverage to codecov
       uses: codecov/codecov-action@v1.0.13
       with:
