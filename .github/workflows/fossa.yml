@@ -1,0 +1,39 @@
+name: fossa
+
+on:
+  push:
+    branches: [ master ]
+  pull_request_target:
+    branches: [ master ]
+
+jobs:
+  fossa:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        go-version: [1.15]
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: setup go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2.1.2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: check out code
+      uses: actions/checkout@v2.3.2
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.head_ref }}
+    - name: install fossa
+      run: |
+        curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+    - name: analyze
+      run: fossa analyze
+      env:
+        FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
+    - name: check results
+      run: fossa test
+      env:
+        FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
