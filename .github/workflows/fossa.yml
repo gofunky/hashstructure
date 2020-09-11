@@ -30,12 +30,14 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
     - name: analyze
-      run: fossa analyze --no-ansi
+      run: |
+        fossa build
+        fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: $HOME/go
     - name: check results
-      run: fossa test --no-ansi
+      run: fossa test --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: $HOME/go
