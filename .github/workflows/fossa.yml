@@ -82,30 +82,3 @@ jobs:
         path: |
           dependencies.md
           licenses.md
-  docs:
-    name: update docs
-    needs: fossa
-    if: ${{ github.head_ref == '' }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v2.3.2
-        with:
-          ref: gh-pages
-      - uses: actions/download-artifact@v2.0.5
-        with:
-          name: report
-      - name: committing changed files
-        uses: stefanzweifel/git-auto-commit-action@v4.4.1
-        with:
-          commit_user_name: ${{ github.event.pusher.name }}
-          commit_user_email: ${{ github.event.pusher.email }}
-          commit_message: |
-            docs: update license report
-            this update was initiated by commit ${{ github.sha }}
-          file_pattern: '*.md'
