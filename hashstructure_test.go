@@ -429,6 +429,40 @@ func TestHash_equalNil(t *testing.T) {
 	}
 }
 
+func TestHash_equalString(t *testing.T) {
+	type Test struct {
+		Name    string
+		Friends []string `hash:"set"`
+	}
+
+	cases := []DefaultCase{
+		{
+			"foo",
+			"bar",
+			false,
+		},
+		{
+			"abc",
+			"cba",
+			false,
+		},
+		{
+			"ABC",
+			"abc",
+			false,
+		},
+		{
+			"Abc",
+			"Abc",
+			true,
+		},
+	}
+
+	for _, tc := range cases {
+		tc.test(t)
+	}
+}
+
 func TestHash_equalSet(t *testing.T) {
 	type Test struct {
 		Name    string
