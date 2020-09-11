@@ -43,31 +43,31 @@ jobs:
     - name: install fossa
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
-        mkdir -pv $GOPATH/pkg
-        mkdir -pv $GOBIN
-        mkdir -pv $GOPATH/src/github.com/$GITHUB_REPOSITORY
+        sudo mkdir -pv $GOPATH/pkg
+        sudo mkdir -pv $GOBIN
+        sudo mkdir -pv $GOPATH/src/github.com/$GITHUB_REPOSITORY
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
         sudo chown -R $(id -u) /usr/local/bin/fossa
       env:
         GOPATH: /root/go
-        GOBIN: $GOPATH/bin
+        GOBIN: /root/go/bin
     - name: build
       run: go build -mod=readonly
       env:
         GOPATH: /root/go
-        GOBIN: $GOPATH/bin
+        GOBIN: /root/go/bin
     - name: analyze
       run: fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: /root/go
-        GOBIN: $GOPATH/bin
+        GOBIN: /root/go/bin
     - name: check results
       run: fossa test --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: /root/go
-        GOBIN: $GOPATH/bin
+        GOBIN: /root/go/bin
     - name: generate reports
       run: |
         fossa report dependencies --no-ansi --revision ${{ github.sha }} --output-file dependencies.md
@@ -75,7 +75,7 @@ jobs:
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
         GOPATH: /root/go
-        GOBIN: $GOPATH/bin
+        GOBIN: /root/go/bin
     - uses: actions/upload-artifact@v2.1.4
       with:
         name: report
