@@ -81,6 +81,8 @@ jobs:
       - name: committing changed files
         uses: stefanzweifel/git-auto-commit-action@v4.4.1
         with:
+          commit_user_name: ${{ github.event.pusher.name }}
+          commit_user_email: ${{ github.event.pusher.email }}
           commit_message: |
             docs: update overview
             this update was initiated by commit ${{ github.sha }}
