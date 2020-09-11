@@ -54,8 +54,30 @@ jobs:
         with:
           name: readme
           path: ./README.md
+  godoc:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    name: update godocs
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2.3.2
+      - name: generate go docs
+        uses: ktr0731/godoc-action@v0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.PAT }}
+          branch: gh-pages
   docs:
-    needs: markdown
+    needs:
+      - markdown
+      - godoc
     if: ${{ github.head_ref == '' }}
     runs-on: ${{ matrix.os }}
     strategy:
