@@ -26,7 +26,20 @@ jobs:
       with:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.head_ref }}
+    - uses: oprypin/find-latest-tag@v1
+      with:
+        repository: fossas/fossa-cli
+      id: tag
+    - uses: actions/cache@v2.1.1
+      id: cache
+      with:
+        path: /usr/local/bin/fossa
+        key: ${{ matrix.go-version }}-${{ steps.tag.outputs.tag }}
+        restore-keys: |
+          ${{ matrix.go-version }}-${{ steps.fossa.outputs.tag }}
+          ${{ matrix.go-version }}
     - name: install fossa
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
     - name: analyze
