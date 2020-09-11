@@ -41,8 +41,8 @@ jobs:
         GOPATH: $HOME/go
     - name: generate reports
       run: |
-        fossa report dependencies --no-ansi > dependencies.md
-        fossa report licenses --no-ansi > licenses.md
+        fossa report dependencies --no-ansi --revision ${{ github.sha }} --output-file dependencies.md
+        fossa report licenses --no-ansi --revision ${{ github.sha }} --output-file licenses.md
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
         GOPATH: $HOME/go
