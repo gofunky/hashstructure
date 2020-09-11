@@ -1,3 +1,6 @@
+---
+title: Overview
+---
 # hashstructure
 
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/gofunky/hashstructure/build/master?style=for-the-badge)](https://github.com/gofunky/hashstructure/actions)
