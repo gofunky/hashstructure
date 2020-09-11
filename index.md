@@ -1,37 +1,81 @@
-## Welcome to GitHub Pages
+# hashstructure
 
-You can use the [editor on GitHub](https://github.com/gofunky/hashstructure/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/gofunky/hashstructure/build/master?style=for-the-badge)](https://github.com/gofunky/hashstructure/actions)
+[![Codecov](https://img.shields.io/codecov/c/github/gofunky/hashstructure?style=for-the-badge)](https://codecov.io/gh/gofunky/hashstructure)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue?style=for-the-badge)](https://godoc.org/github.com/gofunky/hashstructure)
+[![Renovate Status](https://img.shields.io/badge/renovate-enabled-green?style=for-the-badge&logo=renovatebot&color=1a1f6c)](https://app.renovatebot.com/dashboard#github/gofunky/hashstructure)
+[![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/gofunky/hashstructure?style=for-the-badge)](https://libraries.io/github/gofunky/hashstructure)
+[![CodeFactor](https://www.codefactor.io/repository/github/gofunky/hashstructure/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/gofunky/hashstructure)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gofunky/hashstructure?style=for-the-badge)](https://goreportcard.com/report/github.com/gofunky/hashstructure)
+[![GitHub License](https://img.shields.io/github/license/gofunky/hashstructure.svg?style=for-the-badge)](https://github.com/gofunky/hashstructure/blob/master/LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/gofunky/hashstructure.svg?style=for-the-badge&color=9cf)](https://github.com/gofunky/hashstructure/commits/master)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+a go library for creating a unique hash value for arbitrary values
 
-### Markdown
+This can be used to key values in a hash (for use in a map, set, etc.) that are complex.
+The most common use case is comparing two values without sending data across the network, caching values locally (de-dup), etc.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Features
 
-```markdown
-Syntax highlighted code block
+  * Hash any arbitrary Go value, including complex types.
 
-# Header 1
-## Header 2
-### Header 3
+  * Tag a struct field to ignore it and not affect the hash value.
 
-- Bulleted
-- List
+  * Tag a slice type struct field to treat it as a set where ordering
+    doesn't affect the hash code but the field itself is still taken into
+    account to create the hash value.
 
-1. Numbered
-2. List
+  * Optionally, specify a custom hash function to optimize for speed, collision
+    avoidance for your data set, etc.
+  
+  * Optionally, hash the output of `.String()` on structs that implement fmt.Stringer,
+    allowing effective hashing of time.Time
 
-**Bold** and _Italic_ and `Code` text
+  * Optionally, override the hashing process with a `hash` field or by implementing `hashstructure.Hashable`.
 
-[Link](url) and ![Image](src)
+## Installation
+
+```bash
+go get -u github.com/gofunky/hashstructure
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+## Example
 
-### Jekyll Themes
+<!-- add-file: ./hashstructure_examples_test.go -->
+``` go markdown-add-files
+package hashstructure
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/gofunky/hashstructure/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+import (
+	"fmt"
+)
 
-### Support or Contact
+func ExampleHash() {
+	type ComplexStruct struct {
+		Name     string
+		Age      uint
+		Metadata map[string]interface{}
+	}
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+	v := ComplexStruct{
+		Name: "gofunky",
+		Age:  64,
+		Metadata: map[string]interface{}{
+			"car":      true,
+			"location": "California",
+			"siblings": []string{"Bob", "John"},
+		},
+	}
+
+	hash, err := Hash(v, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%d", hash)
+	// Output:
+	// 12836943650294093551
+}
+
+```
+
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B5208%2Fhashstructure.svg?type=large)](https://app.fossa.com/projects/custom%2B5208%2Fhashstructure?ref=badge_large)
