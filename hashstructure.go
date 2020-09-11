@@ -352,12 +352,6 @@ func (w *walker) visit(v reflect.Value, opts *visitOpts) (uint64, error) {
 
 		return h, nil
 
-	case reflect.String:
-		// Directly hash
-		w.h.Reset()
-		_, err := w.h.Write([]byte(v.String()))
-		return w.h.Sum64(), err
-
 	default:
 		return 0, fmt.Errorf("unknown kind to hash: %s", k)
 	}
