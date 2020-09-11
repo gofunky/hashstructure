@@ -73,7 +73,11 @@ jobs:
         with:
           name: readme
       - name: copy contents to index
-        run: cat README.md > index.md
+        run: |
+          echo "---" > index.md
+          echo "title: Overview" >> index.md
+          echo "---" >> index.md
+          cat README.md >> index.md
       - name: committing changed files
         uses: stefanzweifel/git-auto-commit-action@v4.4.1
         with:
