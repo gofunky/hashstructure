@@ -81,5 +81,7 @@ jobs:
       - name: committing changed files
         uses: stefanzweifel/git-auto-commit-action@v4.4.1
         with:
-          commit_message: 'docs: update index'
+          commit_message: |
+            docs: update overview
+            this update was initiated by commit ${{ github.sha }}
           file_pattern: 'index.md'
