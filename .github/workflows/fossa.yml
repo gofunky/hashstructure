@@ -31,15 +31,15 @@ jobs:
     - uses: oprypin/find-latest-tag@v1
       with:
         repository: fossas/fossa-cli
-      id: tag
+      id: tags
     - uses: actions/cache@v2.1.1
       id: cache
       with:
         path: /usr/local/bin/fossa
-        key: ${{ matrix.go-version }}-${{ steps.tag.outputs.tag }}
+        key: ${{ matrix.go-version }}-fossa-${{ steps.tags.outputs.tag }}
         restore-keys: |
-          ${{ matrix.go-version }}-${{ steps.fossa.outputs.tag }}
-          ${{ matrix.go-version }}
+          ${{ matrix.go-version }}-fossa-${{ steps.tags.outputs.tag }}
+          ${{ matrix.go-version }}-fossa
     - name: install fossa
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
@@ -57,21 +57,21 @@ jobs:
         GOPATH: /root/go
         GOBIN: /root/go/bin
     - name: analyze
-      run: fossa analyze --no-ansi --revision ${{ github.sha }}
+      run: fossa analyze --no-ansi --verbose --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: /root/go
         GOBIN: /root/go/bin
     - name: check results
-      run: fossa test --no-ansi --revision ${{ github.sha }}
+      run: fossa test --no-ansi --verbose --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: /root/go
         GOBIN: /root/go/bin
     - name: generate reports
       run: |
-        fossa report dependencies --no-ansi --revision ${{ github.sha }} --output-file dependencies.md
-        fossa report licenses --no-ansi --revision ${{ github.sha }} --output-file licenses.md
+        fossa report dependencies --no-ansi --verbose --revision ${{ github.sha }} > dependencies.md
+        fossa report licenses --no-ansi --verbose --revision ${{ github.sha }} > licenses.md
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
         GOPATH: /root/go
