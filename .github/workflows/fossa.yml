@@ -17,15 +17,17 @@ jobs:
       run:
         shell: bash
     steps:
-    - name: setup go ${{ matrix.go-version }}
-      uses: actions/setup-go@v2.1.2
-      with:
-        go-version: ${{ matrix.go-version }}
     - name: check out code
       uses: actions/checkout@v2.3.2
       with:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.head_ref }}
+    - name: setup go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2.1.2
+      with:
+        go-version: ${{ matrix.go-version }}
+      env:
+        GOPATH: $HOME/go
     - uses: oprypin/find-latest-tag@v1
       with:
         repository: fossas/fossa-cli
@@ -41,20 +43,31 @@ jobs:
     - name: install fossa
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
+        mkdir -pv $GOPATH/pkg
+        mkdir -pv $GOBIN
+        mkdir -pv $GOPATH/src/github.com/$GITHUB_REPOSITORY
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
         sudo chown -R $(id -u) /usr/local/bin/fossa
+      env:
+        GOPATH: $HOME/go
+        GOBIN: $GOPATH/bin
     - name: build
       run: go build -mod=readonly
+      env:
+        GOPATH: $HOME/go
+        GOBIN: $GOPATH/bin
     - name: analyze
       run: fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: $HOME/go
+        GOBIN: $GOPATH/bin
     - name: check results
       run: fossa test --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: $HOME/go
+        GOBIN: $GOPATH/bin
     - name: generate reports
       run: |
         fossa report dependencies --no-ansi --revision ${{ github.sha }} --output-file dependencies.md
@@ -62,6 +75,7 @@ jobs:
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
         GOPATH: $HOME/go
+        GOBIN: $GOPATH/bin
     - uses: actions/upload-artifact@v2.1.4
       with:
         name: report
