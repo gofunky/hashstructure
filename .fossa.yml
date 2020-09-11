@@ -8,7 +8,7 @@ cli:
   project: hashstructure
 analyze:
   modules:
-  - name: github.com/gofunky/hashstructure
+  - name: hashstructure
     type: go
     target: github.com/gofunky/hashstructure
     path: .
