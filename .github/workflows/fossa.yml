@@ -27,7 +27,7 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
       env:
-        GOPATH: $HOME/go
+        GOPATH: ~/go
     - uses: oprypin/find-latest-tag@v1
       with:
         repository: fossas/fossa-cli
@@ -49,24 +49,24 @@ jobs:
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
         sudo chown -R $(id -u) /usr/local/bin/fossa
       env:
-        GOPATH: $HOME/go
+        GOPATH: ~/go
         GOBIN: $GOPATH/bin
     - name: build
       run: go build -mod=readonly
       env:
-        GOPATH: $HOME/go
+        GOPATH: ~/go
         GOBIN: $GOPATH/bin
     - name: analyze
       run: fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
-        GOPATH: $HOME/go
+        GOPATH: ~/go
         GOBIN: $GOPATH/bin
     - name: check results
       run: fossa test --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
-        GOPATH: $HOME/go
+        GOPATH: ~/go
         GOBIN: $GOPATH/bin
     - name: generate reports
       run: |
@@ -74,7 +74,7 @@ jobs:
         fossa report licenses --no-ansi --revision ${{ github.sha }} --output-file licenses.md
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
-        GOPATH: $HOME/go
+        GOPATH: ~/go
         GOBIN: $GOPATH/bin
     - uses: actions/upload-artifact@v2.1.4
       with:
