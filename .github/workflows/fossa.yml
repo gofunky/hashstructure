@@ -44,7 +44,7 @@ jobs:
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
     - name: analyze
       run: |
-        fossa build
+        go build -mod=readonly
         fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
