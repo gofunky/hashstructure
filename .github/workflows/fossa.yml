@@ -42,10 +42,11 @@ jobs:
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         curl https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+        sudo chown -R $(id -u) /usr/local/bin/fossa
+    - name: build
+      run: go build -mod=readonly
     - name: analyze
-      run: |
-        go build -mod=readonly
-        fossa analyze --no-ansi --revision ${{ github.sha }}
+      run: fossa analyze --no-ansi --revision ${{ github.sha }}
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_PUSH }}
         GOPATH: $HOME/go
