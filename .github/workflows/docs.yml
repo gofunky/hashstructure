@@ -23,9 +23,6 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.PAT }}
       - uses: nwylynko/markdown-add-files@v2.1.1
-      - uses: fennecdjay/emojify-docker-action@v1
-        with:
-          directory: '.'
       - name: creating pull request
         if: ${{ github.head_ref == '' }}
         uses: peter-evans/create-pull-request@v3.3.0
