@@ -46,7 +46,7 @@ go get -u github.com/gofunky/hashstructure
 ## Example
 
 <!-- add-file: ./hashstructure_examples_test.go -->
-``` go markdown-add-files
+``` go 
 package hashstructure
 
 import (
