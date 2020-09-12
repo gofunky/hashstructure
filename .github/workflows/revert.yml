@@ -1,0 +1,19 @@
+name: revert
+
+on:
+  issue_comment:
+    types: 
+      - created
+
+jobs:
+  commit:
+    name: revert commit
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '/revert')
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2.3.2
+      - name: automatically revert commit on request
+        uses: srt32/revert@v0.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
