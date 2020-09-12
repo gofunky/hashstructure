@@ -1,0 +1,17 @@
+name: review
+
+on:
+  pull_request_target:
+    - review_requested
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check for automatic approval
+        uses: golfzaptw/action-auto-reviews-from-branches@1.2.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          EVENT_TYPE: APPROVE
+          AUTHOR: 'dependabot-preview[bot], dependabot[bot], renovate[bot], matfax'
+          MESSAGE: This pull request has automatically been approved.
