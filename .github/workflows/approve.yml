@@ -2,7 +2,8 @@ name: review
 
 on:
   pull_request_target:
-    - review_requested
+    types: 
+      - review_requested
 
 jobs:
   approve:
