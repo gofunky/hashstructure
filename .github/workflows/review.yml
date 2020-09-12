@@ -1,0 +1,15 @@
+name: review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+
+jobs:
+  request:
+    name: request
+    runs-on: ubuntu-latest
+    steps:
+      - name: requeset review
+        uses: necojackarc/auto-request-review@v0.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
