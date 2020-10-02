@@ -76,7 +76,7 @@ jobs:
         FOSSA_API_KEY: ${{ secrets.FOSSA_ELEVATED }}
         GOPATH: /root/go
         GOBIN: /root/go/bin
-    - uses: actions/upload-artifact@v2.1.4
+    - uses: actions/upload-artifact@v2.2.0
       with:
         name: report
         path: |
