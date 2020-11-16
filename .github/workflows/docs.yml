@@ -50,7 +50,7 @@ jobs:
             documentation
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - uses: actions/upload-artifact@v2.1.4
+      - uses: actions/upload-artifact@v2.2.1
         with:
           name: readme
           path: ./README.md
